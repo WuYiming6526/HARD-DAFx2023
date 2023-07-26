@@ -1,0 +1,9 @@
+torch
+torchaudio
+lightning
+jsonargparse[signatures]
+tensorboard
+pedalboard
+joblib
+librosa
+matplotlib

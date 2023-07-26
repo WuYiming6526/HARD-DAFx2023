@@ -1,0 +1,74 @@
+model:
+  class_path: lit_modules.LitMelspecDisentangleVAEGAN
+  init_args:
+    vae_name: PitchDisentangleVAE
+    vae_args:
+      encoder_name: SharedConv2D
+      encoder_args:
+        encoder_name: ResConv2D
+        encoder_args:
+          audio_channels: 1
+          emb_width: 128
+          width_up_bound: 512
+          kernel_size: 3
+          fix_time: true
+          down_scales: 
+            - 4
+            - 4
+            - 4
+        branch_depth: 2
+      decoder_name: ResConv2DDecoder
+      decoder_args:
+        audio_channels: 1
+        emb_width: 128
+        width_up_bound: 512
+        kernel_size: 3
+        upsample_type: tconv
+        fix_time: true
+        up_scales:
+          - 4
+          - 4
+          - 4
+      discriminator_name: Conv2dDiscriminator
+      discriminator_args:
+        in_width: 1
+      adv_loss: square
+      latent_activation: identity
+    sample_rate: 22050
+    mono_mel: false
+    n_mels: 128
+    hop_size: 512
+    beta: 0.1
+    clip_gradient: 0.0
+    rec_loss_weight: 10.0
+    adv_loss_weight: 1.0
+    feat_loss_weight: 10.0
+    pitch_shift_mode: rubberband
+    lr: 0.0002
+    lr_decay: 0.99
+    dset_config:
+      path: ../../Data_nvme/fma_large
+      sample_rate: 22050
+      audio_channels: 1
+      batch_audio_length: 131072
+      batch_start_pos: -1
+      n_files: -1
+    batch_size: 64
+    num_workers: 16
+    batch_length_factor: 1024
+
+trainer:
+  accelerator: gpu
+  devices: 1
+  #strategy: ddp
+  max_epochs: 1000
+  precision: 16
+  detect_anomaly: false
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.progress.TQDMProgressBar
+      init_args:
+        refresh_rate: 1
+  logger:
+    class_path: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
+    init_args:
+      save_dir: tb_logs/disentangle-vae
